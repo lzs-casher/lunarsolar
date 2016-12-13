@@ -1,39 +1,39 @@
 package lunarsolar
 
 type Lunar struct {
-	IsLeap     bool //是否闰月
-	LunarDay   int
-	LunarMonth int
-	LunarYear  int
+	IsLeap bool `json:"isleap" description:"是否闰月"`
+	Day    int  `json:"day" description:"天"`
+	Month  int  `json:"month" description:"月"`
+	Year   int  `json:"year" description:"年"`
 }
 
 type Solar struct {
-	SolarDay   int
-	SolarMonth int
-	SolarYear  int
+	Day   int `json:"day" description:"天"`
+	Month int `json:"month" description:"月"`
+	Year  int `json:"year" description:"年"`
 }
 
 /**
 *农历转公历
 **/
 func LunarToSolar(lunar Lunar) *Solar {
-	var days = lunar_month_days[lunar.LunarYear-lunar_month_days[0]]
+	var days = lunar_month_days[lunar.Year-lunar_month_days[0]]
 	var leap = getBitInt(days, 4, 13)
 	var offset = 0
 	var loopend = leap
 	if !lunar.IsLeap {
-		if lunar.LunarMonth <= leap || leap == 0 {
-			loopend = lunar.LunarMonth - 1
+		if lunar.Month <= leap || leap == 0 {
+			loopend = lunar.Month - 1
 		} else {
-			loopend = lunar.LunarMonth
+			loopend = lunar.Month
 		}
 	}
 	for i := 0; i < loopend; i++ {
 		offset += getBitInt(days, 1, 12-i) + 29
 	}
-	offset += lunar.LunarDay
+	offset += lunar.Day
 
-	var solar11 = solar_1_1[lunar.LunarYear-solar_1_1[0]]
+	var solar11 = solar_1_1[lunar.Year-solar_1_1[0]]
 
 	var y = getBitInt(solar11, 12, 9)
 	var m = getBitInt(solar11, 4, 5)
@@ -48,8 +48,8 @@ func LunarToSolar(lunar Lunar) *Solar {
 **/
 func SolarToLunar(solar Solar) *Lunar {
 	lunar := &Lunar{}
-	var index = solar.SolarYear - solar_1_1[0]
-	var data = (solar.SolarYear << 9) | (solar.SolarMonth << 5) | (solar.SolarDay)
+	var index = solar.Year - solar_1_1[0]
+	var data = (solar.Year << 9) | (solar.Month << 5) | (solar.Day)
 	var solar11 = 0
 	if solar_1_1[index] > data {
 		index--
@@ -58,7 +58,7 @@ func SolarToLunar(solar Solar) *Lunar {
 	var y = getBitInt(solar11, 12, 9)
 	var m = getBitInt(solar11, 4, 5)
 	var d = getBitInt(solar11, 5, 0)
-	var offset int = int(solarToInt(solar.SolarYear, solar.SolarMonth, solar.SolarDay) - solarToInt(y, m, d))
+	var offset int = int(solarToInt(solar.Year, solar.Month, solar.Day) - solarToInt(y, m, d))
 
 	var days = lunar_month_days[index]
 	var leap = getBitInt(days, 4, 13)
@@ -78,17 +78,17 @@ func SolarToLunar(solar Solar) *Lunar {
 		}
 	}
 	lunarD = (int)(offset)
-	lunar.LunarYear = lunarY
-	lunar.LunarMonth = lunarM
+	lunar.Year = lunarY
+	lunar.Month = lunarM
 	lunar.IsLeap = false
 	if leap != 0 && lunarM > leap {
-		lunar.LunarMonth = lunarM - 1
+		lunar.Month = lunarM - 1
 		if lunarM == leap+1 {
 			lunar.IsLeap = true
 		}
 	}
 
-	lunar.LunarDay = lunarD
+	lunar.Day = lunarD
 	return lunar
 }
 
@@ -159,9 +159,9 @@ func solarFromInt(g int64) *Solar {
 	y = y + (mi+2)/12
 	dd := ddd - (mi*306+5)/10 + 1
 	var solar = &Solar{}
-	solar.SolarYear = int(y)
-	solar.SolarMonth = int(mm)
-	solar.SolarDay = int(dd)
+	solar.Year = int(y)
+	solar.Month = int(mm)
+	solar.Day = int(dd)
 
 	return solar
 }
